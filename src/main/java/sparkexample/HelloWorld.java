@@ -1,7 +1,11 @@
 package sparkexample;
 
+import static spark.Spark.get;
+
 public class HelloWorld {
 	public static void main(String[] args) throws Exception {
-		System.out.println("Hello World");
+		get("/", (req, res) -> {
+            return "hello from sparkjava.com";
+        });
 	}
 }
