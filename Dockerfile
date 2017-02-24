@@ -1,13 +1,19 @@
-FROM ubuntu:14.04
-MAINTAINER javacodegeeks
+FROM java:8 
 
-RUN apt-get update && apt-get install -y python-software-properties software-properties-common
-RUN add-apt-repository ppa:webupd8team/java
+# Install maven
+RUN apt-get update  
+RUN apt-get install -y maven
 
-RUN echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 boolean true" | debconf-set-selections
+WORKDIR /code
 
-RUN apt-get update && apt-get install -y oracle-java8-installer maven
+# Prepare by downloading dependencies
+ADD pom.xml /code/pom.xml  
+RUN ["mvn", "dependency:resolve"]  
+RUN ["mvn", "verify"]
 
-ADD . /usr/local/helloworld
-RUN cd /usr/local/helloworld && mvn install
-CMD ["java", "-cp", "/usr/local/helloworld/target/helloworld-1.0.jar", "HelloWorld"]
+# Adding source, compile and package into a fat jar
+ADD src /code/src  
+RUN ["mvn", "package"]
+
+EXPOSE 4567  
+CMD ["/usr/lib/jvm/java-8-openjdk-amd64/bin/java", "-jar", "target/sparkexample-jar-with-dependencies.jar"]  
